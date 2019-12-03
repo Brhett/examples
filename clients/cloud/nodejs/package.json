@@ -6,6 +6,7 @@
     "node": ">=8.6"
   },
   "dependencies": {
+    "avsc": "^5.4.16",
     "minimist": "^1.2.0",
     "node-rdkafka": "^2.5.1"
   }

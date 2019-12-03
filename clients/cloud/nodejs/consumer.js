@@ -21,19 +21,30 @@
  */
 
 const Kafka = require('node-rdkafka');
+const avro = require('avsc');
+const fs = require('fs');
 const { configFromCli } = require('./config');
 
+let type;
+
 function createConsumer(config, onData) {
-  const consumer = new Kafka.KafkaConsumer({
+  const kafkaConfig = {
     'bootstrap.servers': config['bootstrap.servers'],
-    'sasl.username': config['sasl.username'],
-    'sasl.password': config['sasl.password'],
-    'security.protocol': 'SASL_SSL',
-    'sasl.mechanisms': 'PLAIN',
     'group.id': 'node-example-group-1'
-  }, {
+  };
+  if (!!config['sasl.username'] && !!config['sasl.password']) {
+    kafkaConfig['sasl.username'] = config['sasl.username'];
+    kafkaConfig['sasl.password'] = config['sasl.password'];
+    kafkaConfig['security.protocol'] = 'SASL_SSL';
+    kafkaConfig['sasl.mechanisms'] = 'PLAIN';
+  }
+  const consumer = new Kafka.KafkaConsumer(kafkaConfig, {
     'auto.offset.reset': 'earliest'
   });
+
+  if (!!config.schema) {
+    type = avro.Type.forSchema(JSON.parse(fs.readFileSync(config.schema).toString()));
+  }
 
   return new Promise((resolve, reject) => {
     consumer
@@ -56,6 +67,10 @@ async function consumerExample() {
   let seen = 0;
 
   const consumer = await createConsumer(config, ({key, value, partition, offset}) => {
+    if (!!type) {
+      // skip avro header
+      value = type.fromBuffer(value.slice(5));
+    }
     console.log(`Consumed record with key ${key} and value ${value} of partition ${partition} @ offset ${offset}. Updated total count to ${++seen}`);
   });
 

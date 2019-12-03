@@ -69,3 +69,9 @@ Consumed record with key alice and value {"count":7} of partition 0 @ offset 7. 
 Consumed record with key alice and value {"count":8} of partition 0 @ offset 8. Updated total count to 9
 Consumed record with key alice and value {"count":9} of partition 0 @ offset 9. Updated total count to 10
 ```
+
+## Consume message with Avro
+
+```bash
+$ node consumer.js -f $HOME/.ccloud/example.config -t test1 -s /path/to/message/schema
+```
