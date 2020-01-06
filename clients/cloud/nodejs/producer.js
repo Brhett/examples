@@ -26,13 +26,16 @@ const { configFromCli } = require('./config');
 const ERR_TOPIC_ALREADY_EXISTS = 36;
 
 function ensureTopicExists(config) {
-  const adminClient = Kafka.AdminClient.create({
-    'bootstrap.servers': config['bootstrap.servers'],
-    'sasl.username': config['sasl.username'],
-    'sasl.password': config['sasl.password'],
-    'security.protocol': 'SASL_SSL',
-    'sasl.mechanisms': 'PLAIN'
-  });
+  const kafkaConfig = {
+    'bootstrap.servers': config['bootstrap.servers']
+  };
+  if (!!config['sasl.username'] && !!config['sasl.password']) {
+    kafkaConfig['sasl.username'] = config['sasl.username'];
+    kafkaConfig['sasl.password'] = config['sasl.password'];
+    kafkaConfig['security.protocol'] = 'SASL_SSL';
+    kafkaConfig['sasl.mechanisms'] = 'PLAIN';
+  }
+  const adminClient = Kafka.AdminClient.create(kafkaConfig);
 
   return new Promise((resolve, reject) => {
     adminClient.createTopic({
@@ -55,14 +58,16 @@ function ensureTopicExists(config) {
 }
 
 function createProducer(config, onDeliveryReport) {
-  const producer = new Kafka.Producer({
-    'bootstrap.servers': config['bootstrap.servers'],
-    'sasl.username': config['sasl.username'],
-    'sasl.password': config['sasl.password'],
-    'security.protocol': 'SASL_SSL',
-    'sasl.mechanisms': 'PLAIN',
-    'dr_msg_cb': true
-  });
+  const kafkaConfig = {
+    'bootstrap.servers': config['bootstrap.servers']
+  };
+  if (!!config['sasl.username'] && !!config['sasl.password']) {
+    kafkaConfig['sasl.username'] = config['sasl.username'];
+    kafkaConfig['sasl.password'] = config['sasl.password'];
+    kafkaConfig['security.protocol'] = 'SASL_SSL';
+    kafkaConfig['sasl.mechanisms'] = 'PLAIN';
+  }
+  const producer = new Kafka.Producer(kafkaConfig);
 
   return new Promise((resolve, reject) => {
     producer
