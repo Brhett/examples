@@ -75,3 +75,12 @@ Consumed record with key alice and value {"count":9} of partition 0 @ offset 9. 
 ```bash
 $ node consumer.js -f $HOME/.ccloud/example.config -t test1 -s /path/to/message/schema
 ```
+
+## Produce message with Avro
+
+```bash
+$ node consumer.js -f $HOME/.ccloud/example.config -t test1 -s /path/to/message/schema -k your_event_key -v /path/to/your/event/data
+```
+
+> The value of `value` is expected to be a path to a json file if schema (`-s`) is given.
+

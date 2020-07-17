@@ -18,9 +18,11 @@
  * Using the node-rdkafka client for Apache Kafka
  *
  * =============================================================================
- */ 
+ */
 
 const Kafka = require('node-rdkafka');
+const avro = require('avsc');
+const fs = require('fs');
 const { configFromCli } = require('./config');
 
 const ERR_TOPIC_ALREADY_EXISTS = 36;
@@ -41,7 +43,7 @@ function ensureTopicExists(config) {
     adminClient.createTopic({
       topic: config.topic,
       num_partitions: 1,
-      replication_factor: 3
+      replication_factor: 1
     }, (err) => {
       if (!err) {
         console.log(`Created topic ${config.topic}`);
@@ -55,6 +57,23 @@ function ensureTopicExists(config) {
       return reject(err);
     });
   });
+}
+
+function buildAvroMessage(avroParser, message) {
+  const data = JSON.parse(message);
+  avroParser.isValid(data, {
+    errorHook : function(path, any, type){
+      throw new Error(`Invalid Field '${path}' type ${type.toString()} : ${any}`);
+    }
+  });
+
+  const avroMsg = avroParser.toBuffer(data);
+  const msg = Buffer.alloc(avroMsg.length + 5);
+  msg.writeUInt8(0);
+  // FIXME: make ensureTopicExists return schema Id
+  msg.writeUInt32BE(1 /* schema Id */, 1);
+  avroMsg.copy(msg, 5);
+  return msg;
 }
 
 function createProducer(config, onDeliveryReport) {
@@ -99,14 +118,16 @@ async function produceExample() {
     }
   });
 
-  for (let idx = 0; idx < 10; ++idx) {
-    const key = 'alice';
-    const value = Buffer.from(JSON.stringify({ count: idx }));
-
-    console.log(`Producing record ${key}\t${value}`);
-
-    producer.produce(config.topic, -1, value, key);
+  let value;
+  if (!!config.schema) {
+    const avroParser = avro.Type.forSchema(JSON.parse(fs.readFileSync(config.schema).toString()));
+    value = buildAvroMessage(avroParser, fs.readFileSync(config.value).toString());
+  } else {
+    value = Buffer.from(config.value);
   }
+
+  console.log(`publish key: ${config.key}, value: ${value}`);
+  producer.produce(config.topic, -1, value, config.key);
 
   producer.flush(10000, () => {
     producer.disconnect();

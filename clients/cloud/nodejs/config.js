@@ -23,7 +23,7 @@ const readline = require('readline');
 const title = "Example Node.js Confluent Cloud client";
 
 const requiredOpts = [
-  ['config', '--config CONFIG', 'The path to your Confluent Cloud configuration file'], 
+  ['config', '--config CONFIG', 'The path to your Confluent Cloud configuration file'],
   ['topic', '--topic TOPIC', 'The topic name on which to operate']
 ];
 
@@ -34,13 +34,15 @@ const requiredConfig = [
 const alias = {
   t: 'topic',
   f: 'config',
-  s: 'schema'
+  s: 'schema',
+  k: 'key',
+  v: 'value'
 };
 
 exports.configFromCli = async function(args = process.argv.slice(2)) {
   const opts = minimist(args, { alias });
   const missingOpts = requiredOpts.filter(([k]) => !opts.hasOwnProperty(k));
-  
+
   if (missingOpts.length) {
     return {
       ...opts,
@@ -75,7 +77,7 @@ ${hints.join('\n\n')}
 
 // config file access and parsing
 
-function readAllLines(path) {    
+function readAllLines(path) {
   return new Promise((resolve, reject) => {
     // Test file access directly, so that we can fail fast.
     // Otherwise, an ENOENT is thrown in the global scope by the readline internals.
@@ -84,14 +86,14 @@ function readAllLines(path) {
     } catch (err) {
       reject(err);
     }
-    
+
     let lines = [];
-    
+
     const reader = readline.createInterface({
       input: fs.createReadStream(path),
       crlfDelay: Infinity
     });
-    
+
     reader
       .on('line', (line) => lines.push(line))
       .on('close', () => resolve(lines));
