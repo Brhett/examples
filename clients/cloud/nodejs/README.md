@@ -30,44 +30,14 @@ The consumer reads the same topic from Confluent Cloud and keeps a rolling sum o
 
 1. Run the producer, passing in arguments for (a) the local file with configuration parameters to connect to your Confluent Cloud instance and (b) the topic name:
 ```bash
-$ node producer.js -f $HOME/.ccloud/example.config -t test1
+$ node producer.js -f $HOME/.ccloud/example.config -t test1 -k key -v value
 Created topic test1
-Producing record alice	{"count":0}
-Producing record alice	{"count":1}
-Producing record alice	{"count":2}
-Producing record alice	{"count":3}
-Producing record alice	{"count":4}
-Producing record alice	{"count":5}
-Producing record alice	{"count":6}
-Producing record alice	{"count":7}
-Producing record alice	{"count":8}
-Producing record alice	{"count":9}
-Successfully produced record to topic "test1" partition 0 {"count":0}
-Successfully produced record to topic "test1" partition 0 {"count":1}
-Successfully produced record to topic "test1" partition 0 {"count":2}
-Successfully produced record to topic "test1" partition 0 {"count":3}
-Successfully produced record to topic "test1" partition 0 {"count":4}
-Successfully produced record to topic "test1" partition 0 {"count":5}
-Successfully produced record to topic "test1" partition 0 {"count":6}
-Successfully produced record to topic "test1" partition 0 {"count":7}
-Successfully produced record to topic "test1" partition 0 {"count":8}
-Successfully produced record to topic "test1" partition 0 {"count":9}
 ```
 
 2. Run the consumer, passing in arguments for (a) the local file with configuration parameters to connect to your Confluent Cloud instance and (b) the same topic name as used above. Verify that the consumer received all the messages:
 ```bash
 $ node consumer.js -f $HOME/.ccloud/example.config -t test1
 Consuming messages from test1
-Consumed record with key alice and value {"count":0} of partition 0 @ offset 0. Updated total count to 1
-Consumed record with key alice and value {"count":1} of partition 0 @ offset 1. Updated total count to 2
-Consumed record with key alice and value {"count":2} of partition 0 @ offset 2. Updated total count to 3
-Consumed record with key alice and value {"count":3} of partition 0 @ offset 3. Updated total count to 4
-Consumed record with key alice and value {"count":4} of partition 0 @ offset 4. Updated total count to 5
-Consumed record with key alice and value {"count":5} of partition 0 @ offset 5. Updated total count to 6
-Consumed record with key alice and value {"count":6} of partition 0 @ offset 6. Updated total count to 7
-Consumed record with key alice and value {"count":7} of partition 0 @ offset 7. Updated total count to 8
-Consumed record with key alice and value {"count":8} of partition 0 @ offset 8. Updated total count to 9
-Consumed record with key alice and value {"count":9} of partition 0 @ offset 9. Updated total count to 10
 ```
 
 ## Consume message with Avro
@@ -79,8 +49,8 @@ $ node consumer.js -f $HOME/.ccloud/example.config -t test1 -s /path/to/message/
 ## Produce message with Avro
 
 ```bash
-$ node consumer.js -f $HOME/.ccloud/example.config -t test1 -s /path/to/message/schema -k your_event_key -v /path/to/your/event/data
+$ node producer.js -f $HOME/.ccloud/example.config -t test1 -s /path/to/message/schema -k your_event_key -v /path/to/your/event/data
 ```
 
-> The value of `value` is expected to be a path to a json file if schema (`-s`) is given.
+> The value (`-v`) is expected to be a path to a json file if schema (`-s`) is given.
 
